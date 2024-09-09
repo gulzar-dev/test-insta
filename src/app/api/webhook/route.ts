@@ -1,36 +1,70 @@
-import express from 'express';
-import bodyParser from 'body-parser';
-import crypto from 'crypto';
+/**
+ * Copyright 2016-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
 
+var bodyParser = require('body-parser');
+var express = require('express');
+var app = express();
+var xhub = require('express-x-hub');
 
-const app = express();
+app.set('port', (process.env.PORT || 5000));
+app.listen(app.get('port'));
+
+app.use(xhub({ algorithm: 'sha1', secret: process.env.APP_SECRET }));
 app.use(bodyParser.json());
 
-app.post('/webhook', (req, res) => {
-    // Verify the webhook signature
-    const hubSignature = req.headers['x-hub-signature'];
-    const calculatedSignature = crypto.createHmac('sha1', process.env.APP_SECRET!).update(JSON.stringify(req.body)).digest('hex');
+var token = process.env.TOKEN || 'token';
+var received_updates: any[] = [];
 
-    if (hubSignature !== `sha1=${calculatedSignature}`) {
-        return res.status(403).send('Invalid webhook signature');
-    }
-
-    // Process the webhook event
-    const event = req.body.entry[0].changes[0];
-    const object = event.object;
-
-    switch (object) {
-        case 'page':
-            // Handle page events (e.g., comments, likes)
-            console.log(object)
-            break;
-        case 'instagram_user':
-            // Handle Instagram user events (e.g., new followers)
-            console.log(object)
-            break;
-        default:
-            console.error('Unhandled object:', object);
-    }
-
-    res.status(200).send('Webhook received');
+app.get('/', function(req: any, res: { send: (arg0: string) => void; }) {
+  console.log(req);
+  res.send('<pre>' + JSON.stringify(received_updates, null, 2) + '</pre>');
 });
+
+app.get(['/facebook', '/instagram', '/threads'], function(req: { query: { [x: string]: any; }; }, res: { send: (arg0: any) => void; sendStatus: (arg0: number) => void; }) {
+  if (
+    req.query['hub.mode'] == 'subscribe' &&
+    req.query['hub.verify_token'] == token
+  ) {
+    res.send(req.query['hub.challenge']);
+  } else {
+    res.sendStatus(400);
+  }
+});
+
+app.post('/facebook', function(req: { body: any; isXHubValid: () => any; }, res: { sendStatus: (arg0: number) => void; }) {
+  console.log('Facebook request body:', req.body);
+
+  if (!req.isXHubValid()) {
+    console.log('Warning - request header X-Hub-Signature not present or invalid');
+    res.sendStatus(401);
+    return;
+  }
+
+  console.log('request header X-Hub-Signature validated');
+  // Process the Facebook updates here
+  received_updates.unshift(req.body);
+  res.sendStatus(200);
+});
+
+app.post('/instagram', function(req: { body: any; }, res: { sendStatus: (arg0: number) => void; }) {
+  console.log('Instagram request body:');
+  console.log(req.body);
+  // Process the Instagram updates here
+  received_updates.unshift(req.body);
+  res.sendStatus(200);
+});
+
+app.post('/threads', function(req: { body: any; }, res: { sendStatus: (arg0: number) => void; }) {
+  console.log('Threads request body:');
+  console.log(req.body);
+  // Process the Threads updates here
+  received_updates.unshift(req.body);
+  res.sendStatus(200);
+});
+
+app.listen();
