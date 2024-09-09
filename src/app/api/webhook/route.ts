@@ -1,5 +1,4 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import crypto from 'crypto';
 
 const token = process.env.TOKEN || 'token';
 const received_updates: any[] = []; // Change to array for type safety
