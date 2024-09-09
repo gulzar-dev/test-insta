@@ -6,10 +6,10 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-var bodyParser = require('body-parser');
-var express = require('express');
-var app = express();
-var xhub = require('express-x-hub');
+const bodyParser = require('body-parser');
+const express = require('express');
+const app = express();
+const xhub = require('express-x-hub');
 
 app.set('port', (process.env.PORT || 5000));
 app.listen(app.get('port'));
@@ -17,8 +17,8 @@ app.listen(app.get('port'));
 app.use(xhub({ algorithm: 'sha1', secret: process.env.APP_SECRET }));
 app.use(bodyParser.json());
 
-var token = process.env.TOKEN || 'token';
-var received_updates: any[] = [];
+const token = process.env.TOKEN || 'token';
+const received_updates: any[] = [];
 
 app.get('/', function(req: any, res: { send: (arg0: string) => void; }) {
   console.log(req);
