@@ -22,5 +22,3 @@ export async function instagram(req: NextApiRequest, res: NextApiResponse) {
   received_updates.unshift(req.body);
   res.status(200).json({}); // Empty response for consistency
 }
-
-export default undefined; // This is not required in Next.js 13 API routes
