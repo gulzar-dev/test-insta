@@ -125,6 +125,21 @@ export default function Home() {
           />
           Terms of Service →
         </a>
+        <a
+          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
+          href="/webhook"
+          
+          rel="noopener noreferrer"
+        >
+          <Image
+            aria-hidden
+            src="https://nextjs.org/icons/globe.svg"
+            alt="Globe icon"
+            width={16}
+            height={16}
+          />
+          webhook →
+        </a>
       </footer>
     </div>
   );
