@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 
 const token = process.env.TOKEN || 'token';
-const received_updates: any[] = []; // Change to array for type safety
+const received_updates = Array; // Change to array for type safety
 
 export async function subscribe(req: NextApiRequest, res: NextApiResponse) {
   if (
@@ -19,6 +19,6 @@ export async function instagram(req: NextApiRequest, res: NextApiResponse) {
   console.log(req.body);
 
   // Process the Instagram updates here
-  received_updates.unshift(req.body);
+  received_updates(req.body);
   res.status(200).json({}); // Empty response for consistency
 }
