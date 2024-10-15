@@ -1,7 +1,7 @@
 'use client'
 import { useRouter } from 'next/navigation';
 import { useSearchParams } from 'next/navigation'
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
     Card,
     CardDescription,
@@ -28,6 +28,52 @@ export default async function InstagramLogin() {
   const { user } = useUser()
 //   const insta_base_url = "https://api.instagram.com/oauth/access_token"
 
+    useEffect(() => {
+        (async () => {
+            if (codeHas) {
+                await pushCodeDB()
+                // console.log(codepush)
+                const ShortAccessToken = await GetShortAccessToken()
+                // console.log(ShortAccessToken)
+                if (ShortAccessToken.data){
+                    const client_secret = process.env.CLIENT_SECRET
+                    const LongAccessToken = await GetLongAccessToken(ShortAccessToken.data.access_token, client_secret!)
+                    if (LongAccessToken){ 
+                        SetLoding("got the AccessToken") 
+                        toast({
+                            description: "got the AccessToken",
+                        })
+                        router.push("/dashboard")
+                    }
+                    else { 
+                        toast({
+                            variant: "destructive",
+                            title: "Uh oh! Something went wrong.",
+                            description: "There was a problem with your request.",
+                            action: <ToastAction onClick={ () => router.push("/set-up")} altText="Try again">Try again</ToastAction>,
+                        })
+                    }
+                }else {
+                    SetLoding(`error_type: ${ShortAccessToken.error_type} "<br>"Error Code: ${ShortAccessToken.code} "<br>" error_message: ${ShortAccessToken.error_message}`)
+                    toast({
+                        variant: "destructive",
+                        title: `Uh oh! Something went wrong. Error Code: ${ShortAccessToken.code}`,
+                        description: `Error Message: ${ShortAccessToken.error_message}`,
+                        action: <ToastAction onClick={ () => GetShortAccessToken() } altText="Try again">Try again</ToastAction>,
+                    })
+                }
+              }else{
+                toast({
+                    variant: "destructive",
+                    title: `Uh oh! No Code: Something went wrong. Error: ${error}`,
+                    description: `Error Description: ${error_description} || Error Reason :${error_reason}`,
+                    action: <ToastAction onClick={ () => router.push("/set-up")} altText="Try again">Try again</ToastAction>,
+                })
+                // SetLoding(`error: ${error} "<br>" error_description: ${error_description} "<br>" error_reason :${error_reason}`)
+              }
+        })
+        
+    }, [])
 
   const GetShortAccessToken  = async ()  =>{
     SetLoding("GetingAccessToken")
@@ -70,47 +116,7 @@ export default async function InstagramLogin() {
   await connectDb()
   
 //   const enuser = await ENuser.findOne({ userId: user?.id! });
-  if (codeHas) {
-    await pushCodeDB()
-    // console.log(codepush)
-    const ShortAccessToken = await GetShortAccessToken()
-    // console.log(ShortAccessToken)
-    if (ShortAccessToken.data){
-        const client_secret = process.env.CLIENT_SECRET
-        const LongAccessToken = await GetLongAccessToken(ShortAccessToken.data.access_token, client_secret!)
-        if (LongAccessToken){ 
-            SetLoding("got the AccessToken") 
-            toast({
-                description: "got the AccessToken",
-            })
-            router.push("/dashboard")
-        }
-        else { 
-            toast({
-                variant: "destructive",
-                title: "Uh oh! Something went wrong.",
-                description: "There was a problem with your request.",
-                action: <ToastAction onClick={ () => router.push("/set-up")} altText="Try again">Try again</ToastAction>,
-            })
-        }
-    }else {
-        SetLoding(`error_type: ${ShortAccessToken.error_type} "<br>"Error Code: ${ShortAccessToken.code} "<br>" error_message: ${ShortAccessToken.error_message}`)
-        toast({
-            variant: "destructive",
-            title: `Uh oh! Something went wrong. Error Code: ${ShortAccessToken.code}`,
-            description: `Error Message: ${ShortAccessToken.error_message}`,
-            action: <ToastAction onClick={ () => GetShortAccessToken() } altText="Try again">Try again</ToastAction>,
-        })
-    }
-  }else{
-    toast({
-        variant: "destructive",
-        title: `Uh oh! No Code: Something went wrong. Error: ${error}`,
-        description: `Error Description: ${error_description} || Error Reason :${error_reason}`,
-        action: <ToastAction onClick={ () => router.push("/set-up")} altText="Try again">Try again</ToastAction>,
-    })
-    // SetLoding(`error: ${error} "<br>" error_description: ${error_description} "<br>" error_reason :${error_reason}`)
-  }
+  
 
   return (
     <div className='h-[100vh] w-full px-10'>
