@@ -1,3 +1,4 @@
+'use client'
 import { useRouter } from 'next/navigation';
 import { useSearchParams } from 'next/navigation'
 import { useState } from 'react';
@@ -8,11 +9,11 @@ import {
     CardTitle,
 } from "@/components/ui/card"  
 import { connectDb } from '@/lib/db';
-import { currentUser } from '@clerk/nextjs/server';
 import ENuser from '@/app/models/ENuser-model';
 import GetLongAccessToken from './actions/getlongaccesstoken';
 import { useToast } from '@/hooks/use-toast';
 import { ToastAction } from '@/components/ui/toast';
+import { useUser } from '@clerk/nextjs';
 
 export default async function InstagramLogin() {
   const router = useRouter();
@@ -24,6 +25,7 @@ export default async function InstagramLogin() {
   const error = searchParams.get("error");
   const error_reason = searchParams.get("error_reason");
   const error_description = searchParams.get("error_description");
+  const { user } = useUser()
 //   const insta_base_url = "https://api.instagram.com/oauth/access_token"
 
 
@@ -40,7 +42,7 @@ export default async function InstagramLogin() {
         )
     //pushed the Short AccessToken to database 
     await connectDb()
-    const user = await currentUser();
+    
     const enuser = await ENuser.findOne({ userId: user?.id! });
     if (enuser){
         // pushing short_access_token to DB
@@ -54,7 +56,7 @@ export default async function InstagramLogin() {
 
   const pushCodeDB = async () => {
     await connectDb()
-    const user = await currentUser();
+    
     const enuser = await ENuser.findOne({ userId: user?.id! });
     if (enuser){
         // adding code to DB 
@@ -66,7 +68,7 @@ export default async function InstagramLogin() {
   }
 
   await connectDb()
-  const user = await currentUser();
+  
 //   const enuser = await ENuser.findOne({ userId: user?.id! });
   if (codeHas) {
     await pushCodeDB()
