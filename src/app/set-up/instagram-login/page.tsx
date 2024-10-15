@@ -29,7 +29,7 @@ export default async function InstagramLogin() {
 //   const insta_base_url = "https://api.instagram.com/oauth/access_token"
 
     useEffect(() => {
-        (async () => {
+        (async () => { 
             if (codeHas) {
                 await pushCodeDB()
                 // console.log(codepush)
